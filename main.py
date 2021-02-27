@@ -1,11 +1,15 @@
+from datetime import timedelta
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from starlette import status
 
 import crud
 import models
 import schemas
+from customer import authenticate_user, create_access_token, get_current_active_user
 from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -25,6 +29,13 @@ def get_db():
 @app.post("/brands/", response_model=schemas.BrandResponse)
 def create_brand(brand: schemas.BrandCreate, db: Session = Depends(get_db)):
     return crud.create_brand(db=db, data=brand)
+
+
+@app.get("/brands", response_model=List[schemas.BrandResponse])
+async def read_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db),
+                      current_user: schemas.Customer = Depends(get_current_active_user)):
+    brands = crud.get_brands(db, skip=skip, limit=limit)
+    return brands
 
 
 @app.post("/users/", response_model=schemas.User)
@@ -51,7 +62,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
+        user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
 ):
     return crud.create_user_item(db=db, item=item, user_id=user_id)
 
@@ -60,3 +71,24 @@ def create_item_for_user(
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
+
+
+@app.post("/token", response_model=schemas.Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(schemas.fake_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=schemas.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/users/me/", response_model=schemas.Customer)
+async def read_users_me(current_user: schemas.Customer = Depends(get_current_active_user)):
+    return current_user
