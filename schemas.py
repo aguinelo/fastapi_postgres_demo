@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 from datetime import datetime
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -50,6 +50,7 @@ class BrandBase(BaseModel):
     slug: str
     featured: Optional[bool] = False
     status: Optional[int] = 0
+    metatags: Dict[str, Any]
 
 
 class ItemCreate(ItemBase):
@@ -93,6 +94,7 @@ class Brand(BaseModel):
     slug: str
     featured: bool
     status: int
+    metatags: Dict[str, Any]
 
     class Config:
         orm_mode = True

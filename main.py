@@ -38,6 +38,12 @@ async def read_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get
     return brands
 
 
+@app.get("/brands/json", response_model=List[schemas.BrandResponse])
+async def read_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    brands = crud.get_brands_by_json(db, skip=skip, limit=limit)
+    return brands
+
+
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)

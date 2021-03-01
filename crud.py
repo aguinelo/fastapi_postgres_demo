@@ -1,3 +1,4 @@
+from sqlalchemy import Integer
 from sqlalchemy.orm import Session
 
 import models
@@ -48,5 +49,13 @@ def create_brand(db: Session, data: schemas.BrandCreate):
     db.refresh(brand)
     return brand
 
+
 def get_brands(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Brand).offset(skip).limit(limit).all()
+
+
+def get_brands_by_json(db: Session, skip: int = 0, limit: int = 100):
+    # return db.query(models.Brand).filter(models.Brand.metatags["opa"].cast(int) == 123).offset(skip).limit(limit).all()
+    return db.query(models.Brand).filter(
+        models.Brand.metatags['opa'].astext.cast(Integer) == 321
+    ).offset(skip).limit(limit).all()
