@@ -50,6 +50,14 @@ def create_brand(db: Session, data: schemas.BrandCreate):
     return brand
 
 
+def create_product(db: Session, data: schemas.ProductCreate):
+    product = models.Product(**data.dict())
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    return product
+
+
 def get_brands(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Brand).offset(skip).limit(limit).all()
 

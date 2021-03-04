@@ -26,6 +26,11 @@ def get_db():
         db.close()
 
 
+@app.post("/products/", response_model=schemas.ProductResponse)
+def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
+    return crud.create_product(db=db, data=product)
+
+
 @app.post("/brands/", response_model=schemas.BrandResponse)
 def create_brand(brand: schemas.BrandCreate, db: Session = Depends(get_db)):
     return crud.create_brand(db=db, data=brand)

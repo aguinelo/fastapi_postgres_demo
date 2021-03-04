@@ -94,7 +94,17 @@ class Brand(BaseModel):
     slug: str
     featured: bool
     status: int
-    metatags: Dict[str, Any]
+    metatags: Optional[Dict[str, Any]] = []
+
+    class Config:
+        orm_mode = True
+
+
+# response in product
+class ProductBrand(BaseModel):
+    id: int
+    name: str
+    logo: str
 
     class Config:
         orm_mode = True
@@ -106,3 +116,24 @@ class BrandResponse(Brand):
     route_id: int
 
     pass
+
+
+class ProductBase(BaseModel):
+    name: str
+    brand_id: int
+
+
+class ProductCreate(ProductBase):
+    pass
+
+
+class Product(ProductBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class ProductResponse(Product):
+    brand: ProductBrand
+    created_at: datetime
