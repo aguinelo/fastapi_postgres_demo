@@ -8,7 +8,8 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette import status
 
-from schemas import CustomerInDb, fake_users_db, SECRET_KEY, ALGORITHM, Customer, TokenData
+from schemas.customer import CustomerInDb, Customer
+from schemas.token import fake_users_db, SECRET_KEY, ALGORITHM, TokenData
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
