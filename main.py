@@ -8,6 +8,7 @@ from starlette import status
 
 import crud
 from schemas.brand import BrandResponse, BrandCreate
+from schemas.category import CategoryResponse, CategoryCreate
 from schemas.customer import Customer
 from schemas.item import ItemCreate, Item
 from schemas.token import Token, fake_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -108,3 +109,10 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @app.get("/users/me/", response_model=Customer)
 async def read_users_me(current_user: Customer = Depends(get_current_active_user)):
     return current_user
+
+
+# categories
+
+@app.post("/categories/", response_model=CategoryResponse)
+async def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
+    return crud.create_category(db, category)

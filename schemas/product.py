@@ -1,9 +1,9 @@
 from datetime import datetime
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 
-# response in product
 class ProductBrand(BaseModel):
     id: int
     name: str
@@ -13,9 +13,18 @@ class ProductBrand(BaseModel):
         orm_mode = True
 
 
+class ProductCategory(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class ProductBase(BaseModel):
     name: str
     brand_id: int
+    categories: List[Optional[int]] = []
 
 
 class ProductCreate(ProductBase):
@@ -31,4 +40,5 @@ class Product(ProductBase):
 
 class ProductResponse(Product):
     brand: ProductBrand
+    categories: Optional[List[ProductCategory]] = []
     created_at: datetime

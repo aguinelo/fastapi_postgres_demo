@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy import Integer
 from sqlalchemy.orm import Session
 
@@ -5,6 +6,9 @@ from models.user import User as UserModel
 from models.item import Item as ItemModel
 from models.brand import Brand as BrandModel
 from models.product import Product as ProductModel
+from models.category import Category as CategoryModel
+from schemas.category import CategoryCreate
+from schemas.product_category import ProductCategoryCreate
 from schemas.user import UserCreate
 from schemas.item import ItemCreate
 from schemas.brand import BrandCreate
@@ -57,6 +61,16 @@ def create_brand(db: Session, data: BrandCreate):
 
 
 def create_product(db: Session, data: ProductCreate):
+    categories = db.query(CategoryModel).filter(CategoryModel.id.in_(data.categories)).all()
+
+    if len(categories) != len(data.categories):
+        _not_found = list(map(str, filter(
+            lambda category: category if category not in map(lambda c_: c_.id, categories) else None,
+            data.categories
+        )))
+
+        raise HTTPException(status_code=404, detail=f"Categories: {','.join(_not_found)} not found.")
+    data.categories = categories
     product = ProductModel(**data.dict())
     db.add(product)
     db.commit()
@@ -73,3 +87,15 @@ def get_brands_by_json(db: Session, skip: int = 0, limit: int = 100):
     return db.query(BrandModel).filter(
         BrandModel.metatags['opa'].astext.cast(Integer) == 321
     ).offset(skip).limit(limit).all()
+
+
+# categories
+
+def create_category(db: Session, data: CategoryCreate):
+    category = CategoryModel(**data.dict())
+    # TODO replace for route create
+    category.route_id = 0
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+    return category
